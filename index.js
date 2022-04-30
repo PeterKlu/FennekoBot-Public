@@ -20,8 +20,6 @@ const indexJSON = require("./commands/admin_commands/indexJSON");
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_EMOJIS_AND_STICKERS", "GUILD_MESSAGES", "GUILD_MESSAGE_TYPING", "GUILD_PRESENCES"]});
 const prefix = "!";
 const AUTHOR = "125285454814642176";
-//const customEmojiRegex = /:.+?:\d+:/;
-//const defaultEmojiRegex = /:[^:\s]+:/;
 
 var img = fs.readFile("./rarities.json", "utf8", (err, data) => {
     try {
@@ -45,21 +43,21 @@ client.on("ready", () => {
 
 client.on("messageCreate", function(message) {
     if (message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return; // && message.channel.id !== "714021906176802879") return;
+    if (!message.content.startsWith(prefix)) return;
     
     if (message.channel.id === "834908564417282058" || message.channel.id === "826560091083505715") {
     // if (message.channel.id === "714021906176802879") {
         const commandBody = message.content.slice(prefix.length);
         const args = commandBody.split(' ');
         const command = args.shift().toLowerCase();
-        pulls = Array(img.images.length);
-
+        pulls = Array(img.URs.length + img.SSRs.length + img.SRs.length + img.Rs.length + img.commons.length);
+        
         // Command that pulls an image from the pool
         if (command === "fenneko" || (command === "fantastic" && message.author.id === "192182341244944384") || 
            (command === "caw" && message.author.id === "785659024250896435")) { fenneko(img, fs, message); }
 
-        // Command that lists the pulls for the server
-        else if (command === "pulls") { /*message.channel.send(pulls.length)*/pull(pulls, img, message); }
+        // Command that lists the pulls for the server or any new pulls that have been added
+        else if (command === "pulls" || command === "new") { pull(pulls, img, message, command); }
 
         // Command to ping the bot
         else if (command === "pingfenneko") { ping(message) }
@@ -85,14 +83,16 @@ client.on("messageCreate", function(message) {
         // Admin commands
         if (message.author.id === AUTHOR) {
             // Admin command to reset the values of all the pulls
-            if (command === "resetfenneko" || command === "resetfenn") { img.images = resetPulls(img); }
+            if (command === "resetfenneko" || command === "resetfenn") { 
+                img.URs = resetPulls(img.URs);
+                img.SSRs = resetPulls(img.SSRs);
+                img.SRs = resetPulls(img.SRs);
+                img.Rs = resetPulls(img.Rs);
+                img.commons = resetPulls(img.commons);
+            }
 
             // Admin command to index the JSON file for readability
             if (command === "indexfenneko" || command === "indexfenn") { indexJSON(img, fs, message); }
         }
     }
-
-    // else if (message.channel.id === "714021906176802879") {
-    //     if (!message.content.match(customEmojiRegex) ) { deleteMessage(message); }
-    // }
 });
